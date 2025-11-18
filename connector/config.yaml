@@ -13,7 +13,7 @@ api:
   backoff_seconds: 2
 
 sync:
-  mode: "incremental"
+  mode: "full"
   batch_size: 500
   updated_at_column: "updated_at"
   state_file: "/app/.sync_state.json"
