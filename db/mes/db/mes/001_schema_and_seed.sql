@@ -39,27 +39,14 @@ CREATE TABLE IF NOT EXISTS marm (
 
 -- SEED
 
-INSERT INTO mara (matnr, mtart, meins) VALUES
-  ('MAT-1001', 'FERT', 'EA'),
-  ('MAT-1002', 'HALB', 'EA'),
-  ('MAT-1003', 'FERT', 'EA')
-ON CONFLICT (matnr) DO NOTHING;
+# 문제 해결 허들
+- 제공된 mes-db 스키마에는 `production_orders`가 존재하지 않아, 실제 어떤 데이터를 product로 변환해야 하는지 혼란이 있었다.
+- SAP 스타일 스키마(mara, mvke 등)를 분석해보니 mvke의 SKU가 실제 "판매 가능한 제품 단위"임을 파악하는 데 시간이 걸렸다.
+- updated_at 컬럼이 없어 incremental sync를 구현할 수 없었기 때문에 full sync 전략으로 접근해야 했다.
+- API 응답 실패 시 정확한 재시도 조건, 로깅, 예외 안전성 확보가 필요했다.
 
-INSERT INTO makt (matnr, spras, maktx) VALUES
-  ('MAT-1001', 'EN', 'Widget Alpha'),
-  ('MAT-1001', 'DE', 'Widget Alpha DE'),
-  ('MAT-1002', 'EN', 'Widget Beta'),
-  ('MAT-1003', 'EN', 'Widget Gamma')
-ON CONFLICT (matnr, spras) DO NOTHING;
-
-INSERT INTO mvke (matnr, vkorg, vtweg, sku, status) VALUES
-  ('MAT-1001', '1000', '10', 'SKU-ALPHA', 'ACTIVE'),
-  ('MAT-1002', '1000', '10', 'SKU-BETA',  'ACTIVE'),
-  ('MAT-1002', '2000', '10', 'SKU-BETA',  'INACTIVE'),
-  ('MAT-1003', '1000', '20', 'SKU-GAMMA-ALT', 'ACTIVE')
-ON CONFLICT (matnr, vkorg, vtweg) DO NOTHING;
-
-INSERT INTO marm (matnr, umrez, umren, altuom) VALUES
-  ('MAT-1001', 10, 1, 'BOX'),
-  ('MAT-1002', 6, 1, 'PACK')
-ON CONFLICT (matnr, altuom) DO NOTHING;
+# 개선점
+- mvke/mara 외에도 makt(다국어 텍스트), marm(대체 단위)을 활용해 더 풍부한 product payload를 만들 수 있다.
+- 실제 환경에서는 incremental sync를 위해 mvke 테이블에 updated_at 트리거/컬럼을 추가하는 것이 필요하다.
+- 커넥터 실행 상태 및 동기화 이력을 DB나 Redis 같은 외부 저장소에 남기면 운영 안정성을 높일 수 있다.
+- 테스트 코드(pytest) 및 각 계층(db, api_client, sync)의 유닛테스트를 추가해 신뢰성을 강화할 수 있다.
