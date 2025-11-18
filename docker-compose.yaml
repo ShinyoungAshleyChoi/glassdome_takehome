@@ -50,3 +50,9 @@ services:
       PORT: 8000
     ports:
       - "8000:8000"
+
+  connector:
+    build: ./connector
+    depends_on:
+      - mes-db
+      - api
