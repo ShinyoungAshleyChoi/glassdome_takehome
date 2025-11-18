@@ -38,12 +38,11 @@ class MesDbClient:
 
         sql = """
               SELECT
-                  mvke.matnr AS matnr,
-                  mvke.sku   AS sku,
-                  mvke.status AS status
+                  matnr AS matnr,
+                  sku   AS sku,
+                  status AS status
               FROM mvke
-                       JOIN mara ON mara.matnr = mvke.matnr
-              ORDER BY mvke.matnr, mvke.vkorg, mvke.vtweg
+              ORDER BY matnr, vkorg, vtweg
                   LIMIT %s OFFSET %s \
               """
         params: List[Any] = [limit, offset]
